@@ -1,80 +1,66 @@
-# PancakeMusicBox Project License v1.0
+# PancakeMusicBox Project License v1.1
 
-Copyright (c) 2025 Ironhero (Moonrak Choi)  
-[https://github.com/ironhero1544](https://github.com/ironhero1544)
+Copyright (c) 2025 Ironhero (Moonrak Choi)
+[https://github.com/ironhero1544]
 
-This license governs the usage terms of the PancakeMusicBox project and its components.
+This license governs the terms of use for the PancakeMusicBox project ("The Work") and its components. This license is inspired by the principles of the Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA) license but is a distinct license tailored for this project.
+
+---
+
+**Summary (For informational purposes only; the full terms below govern):**
+
+*   **Attribution:** You must give appropriate credit.
+*   **NonCommercial:** You may not use the material for commercial purposes.
+*   **ShareAlike:** If you remix, transform, or build upon the material, you must distribute your contributions under the same license as the original.
 
 ---
 
-## 1. Prohibited Commercial Use
+## 1. Definitions
 
-The following elements are **strictly prohibited from being used commercially**:
-
-- Proprietary functions of PancakeMusicBox (e.g., music playback engine, project-specific VST programs)
-- User Interface (UI) and overall User Experience (UX) design
-- Any AI models, trained datasets, and generated outputs included in the project
-
-**Examples of commercial use:**
-
-- Integrating into paid software or services
-- Including in products/services that generate advertising revenue
-- Developing commercial software/services based on this project
-
----
+*   **"The Work"** refers to the original content and components of the PancakeMusicBox project to which this license applies. This may include, but is not limited to, source code, proprietary functions, User Interface (UI) and User Experience (UX) design, any AI models, trained datasets, and generated outputs included in the project, excluding External Components as defined in Section 2.
+*   **"Commercial Use"** means any use primarily intended for or directed towards commercial advantage or monetary compensation. This includes, but is not limited to, integrating into paid software or services, including in products/services that generate advertising revenue, or developing commercial software/services based on this project.
+*   **"Derivative Works"** means a work based upon the Work or upon the Work and other pre-existing works, such as a translation, modification, adaptation, arrangement, visualization, or any other form in which the Work may be recast, transformed, or adapted.
 
 ## 2. Use of External Components and APIs
 
-Any external APIs, libraries, or open-source components used in this project are subject to their **original licenses**.  
-This license applies **only to original PancakeMusicBox content**, and users must comply with the license terms of external components.
+Any external APIs, libraries, or open-source components used in this project are subject to their **original licenses**. This license applies **only to the original PancakeMusicBox content ("The Work")**, and users must comply with the license terms of all external components.
 
-When distributing the project via GitHub or similar platforms, any sensitive information (such as API keys) must be **excluded**.  
-Unauthorized disclosure of the full project including such information is **strictly prohibited**.
+When distributing the project via GitHub or similar platforms, any sensitive information (such as API keys) must be **strictly excluded**. Unauthorized disclosure of the full project including such information is **strictly prohibited**.
 
----
+## 3. License Grant and Conditions
 
-## 3. Attribution Required for Non-Commercial, Non-Personal Use
+Subject to the terms and conditions of this License, the Licensor hereby grants You a worldwide, royalty-free, non-exclusive, non-sublicensable license to exercise the rights in the Work provided You comply with all of the following conditions:
 
-If the project is used for **non-commercial but non-personal** purposes (e.g., academic, research, exhibitions), proper **attribution is required**:
+    **3.1 Attribution:**
+    If you distribute or publicly perform the Work or Derivative Works, You must provide appropriate **attribution**. This includes:
 
-**Example attribution:**
+    *   **Required Information:**
+        *   Project Name: PancakeMusicBox
+        *   Author and GitHub Link: Ironhero (Moonrak Choi), [https://github.com/ironhero1544/pancakemusicbox]
+        *   Indication of components used (e.g., UI, specific features), if applicable.
+        *   A link to or mention of this license (PancakeMusicBox Project License v1.1).
+    *   **Placement:** Attribution must be included in code comments, documentation, about screens, website footers, or other reasonable and visible locations appropriate to the medium or means You are using.
 
-- "This software is based on the PancakeMusicBox project ([https://github.com/ironhero1544/pancakemusicbox])."
+    **3.2 NonCommercial:**
+    You may **not use the Work or Derivative Works for Commercial Use**. The following elements are specifically and **strictly prohibited from being used commercially**:
+    *   Proprietary functions of PancakeMusicBox (e.g., music playback engine, project-specific VST programs).
+    *   User Interface (UI) and overall User Experience (UX) design.
+    *   Any AI models, trained datasets, and generated outputs included in the project.
 
-Attribution should be included in:
+    **3.3 ShareAlike:**
+    If you remix, transform, or build upon the material (create Derivative Works) and distribute your contributions, You **must distribute Your Derivative Works under the terms of this PancakeMusicBox Project License v1.1** (or a compatible subsequent version designated by the Licensor). You may not apply legal terms or technological measures that legally restrict others from doing anything this license permits.
 
-- Code comments, documentation, information screens, or other visible locations
+## 4. License Violation
 
-Required details:
+Any violation of the terms of this license will result in the **immediate termination** of Your rights granted hereunder. Legal actions, including civil and/or criminal proceedings, may be taken if necessary.
 
-- Project name
-- Author and GitHub link
-- Used components (e.g., UI, features)
+## 5. No Warranty
 
----
+THE WORK IS PROVIDED **"AS IS"**, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE WORK OR THE USE OR OTHER DEALINGS IN THE WORK.
 
-## 4. Derivative Projects
+## 6. Contact
 
-You may create **non-commercial derivative projects** based on part or all of PancakeMusicBox.  
-However, such projects must fulfill the **attribution requirement** stated above and **may not be used commercially**.
-
----
-
-## 5. License Violation
-
-Violation of this license will result in **immediate termination** of the right to use this software.  
-Legal actions, including civil and/or criminal proceedings, may be taken if necessary.
-
----
-
-## 6. No Warranty
-
-This software is provided **"as-is"**, with **no warranties of any kind**.  
-The author is **not liable** for any damages, data loss, or functional issues arising from the use of this software.
-
----
-
-## 7. Contact
-
-For commercial license inquiries or other questions, please contact:  
+For commercial license inquiries or other questions, please contact:
 📧 [choimoonrak1544tv@gmail.com]
+
+---
