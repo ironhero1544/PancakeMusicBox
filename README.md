@@ -11,5 +11,6 @@ PancakeMusicBox는 사용자 친화적인 UI를 갖춘 HiFi 음질 재생용 로
 자세한 내용은 [LICENSE_KR](./License_KR)을 참고하세요.
 
 This project is **prohibited from commercial use**,
-Even when using non-commercial, ** must specify the source**.
+Even when using non-commercial,
+**must specify the source**.
 For more information, see [LICENSE](./LICENSE). 
