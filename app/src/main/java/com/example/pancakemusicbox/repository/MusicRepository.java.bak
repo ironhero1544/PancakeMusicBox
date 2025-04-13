@@ -1,0 +1,384 @@
+package com.example.pancakemusicbox.repository;
+
+import android.content.Context;
+import android.os.Environment;
+import android.util.Log;
+
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+
+import com.example.pancakemusicbox.audio.AudioScannerNative;
+import com.example.pancakemusicbox.model.Album;
+import com.example.pancakemusicbox.model.Playlist;
+import com.example.pancakemusicbox.model.Track;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+/**
+ * 음악 파일과 관련 메타데이터를 관리하는 리포지토리
+ * 앱 내에서 음악 데이터에 접근하기 위한 중앙 인터페이스 역할
+ */
+public class MusicRepository {
+    private static final String TAG = "MusicRepository";
+    private static final String DB_FILENAME = "music_database.db";
+
+    // 싱글톤 인스턴스
+    private static MusicRepository instance;
+
+    // 컨텍스트 참조
+    private final Context context;
+
+    // 네이티브 스캐너 인스턴스
+    private final AudioScannerNative scanner;
+
+    // 현재 재생 중인 트랙
+    private final MutableLiveData<Track> currentlyPlayingTrack = new MutableLiveData<>();
+
+    // 스캔 진행률
+    private final MutableLiveData<Integer> scanProgress = new MutableLiveData<>(0);
+
+    // 모든 트랙 목록
+    private final MutableLiveData<List<Track>> allTracks = new MutableLiveData<>(new ArrayList<>());
+
+    // 최근 재생 트랙 목록
+    private final MutableLiveData<List<Track>> recentlyPlayedTracks = new MutableLiveData<>(new ArrayList<>());
+
+    // 자주 재생되는 트랙 목록
+    private final MutableLiveData<List<Track>> frequentlyPlayedTracks = new MutableLiveData<>(new ArrayList<>());
+
+    // 최근 추가된 트랙 목록
+    private final MutableLiveData<List<Track>> recentlyAddedTracks = new MutableLiveData<>(new ArrayList<>());
+
+    // 장르별 트랙 목록
+    private final MutableLiveData<Map<String, List<Track>>> tracksByGenre = new MutableLiveData<>(new HashMap<>());
+
+    // 플레이리스트 목록
+    private final MutableLiveData<List<Playlist>> playlists = new MutableLiveData<>(new ArrayList<>());
+
+    // 사용자 생성 플레이리스트
+    private final List<Playlist> userPlaylists = new ArrayList<>();
+
+    // 비공개 생성자 (싱글톤 패턴)
+    private MusicRepository(Context context) {
+        this.context = context.getApplicationContext();
+        this.scanner = AudioScannerNative.getInstance();
+
+        // 스캔 진행 리스너 설정
+        scanner.setProgressListener((current, total) -> {
+            int progressPercent = (int) ((current / (float) total) * 100);
+            scanProgress.postValue(progressPercent);
+        });
+
+        // 데이터베이스 로드
+        loadDatabase();
+    }
+
+    // 싱글톤 인스턴스 얻기
+    public static MusicRepository getInstance(Context context) {
+        if (instance == null) {
+            synchronized (MusicRepository.class) {
+                if (instance == null) {
+                    instance = new MusicRepository(context);
+                }
+            }
+        }
+        return instance;
+    }
+
+    // 데이터베이스 로드
+    private void loadDatabase() {
+        File dbFile = new File(context.getFilesDir(), DB_FILENAME);
+        
+        if (dbFile.exists()) {
+            boolean success = scanner.loadDatabase(dbFile.getAbsolutePath());
+            if (success) {
+                Log.d(TAG, "Database loaded successfully");
+                refreshData();
+            } else {
+                Log.e(TAG, "Failed to load database");
+            }
+        } else {
+            Log.d(TAG, "No database file found, will scan music directories later");
+        }
+    }
+
+    // 데이터베이스 저장
+    private void saveDatabase() {
+        File dbFile = new File(context.getFilesDir(), DB_FILENAME);
+        boolean success = scanner.saveDatabase(dbFile.getAbsolutePath());
+        
+        if (success) {
+            Log.d(TAG, "Database saved successfully");
+        } else {
+            Log.e(TAG, "Failed to save database");
+        }
+    }
+
+    // 데이터 새로고침
+    private void refreshData() {
+        // 모든 트랙 목록 업데이트
+        allTracks.postValue(scanner.getAllTracks());
+        
+        // 최근 재생 트랙 업데이트
+        recentlyPlayedTracks.postValue(scanner.getRecentlyPlayedTracks(20));
+        
+        // 자주 재생되는 트랙 업데이트
+        frequentlyPlayedTracks.postValue(scanner.getFrequentlyPlayedTracks(20));
+        
+        // 최근 추가된 트랙 업데이트
+        recentlyAddedTracks.postValue(scanner.getRecentlyAddedTracks(20));
+        
+        // 장르별 트랙 업데이트
+        tracksByGenre.postValue(scanner.getTracksByGenre());
+        
+        // 현재 재생 중인 트랙이 없으면 첫 번째 트랙으로 설정
+        if (currentlyPlayingTrack.getValue() == null) {
+            List<Track> tracks = recentlyPlayedTracks.getValue();
+            if (tracks != null && !tracks.isEmpty()) {
+                currentlyPlayingTrack.postValue(tracks.get(0));
+            }
+        }
+        
+        // 생성된 플레이리스트 업데이트 및 제공
+        updateGeneratedPlaylists();
+    }
+
+    // 기본 폴더들 스캔
+    public void scanDefaultDirectories() {
+        new Thread(() -> {
+            // 외부 저장소의 음악 디렉토리
+            String externalMusicDir = Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_MUSIC).getAbsolutePath();
+            scanner.scanDirectory(externalMusicDir);
+            
+            // 다운로드 디렉토리도 확인
+            String downloadDir = Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
+            scanner.scanDirectory(downloadDir);
+            
+            // 스캔 완료 후 데이터베이스 저장 및 데이터 새로고침
+            saveDatabase();
+            refreshData();
+        }).start();
+    }
+
+    // 특정 디렉토리 스캔
+    public void scanDirectory(String directoryPath) {
+        new Thread(() -> {
+            boolean success = scanner.scanDirectory(directoryPath);
+            if (success) {
+                saveDatabase();
+                refreshData();
+            }
+        }).start();
+    }
+
+    // 특정 파일 스캔
+    public void scanFile(String filePath) {
+        new Thread(() -> {
+            boolean success = scanner.scanFile(filePath);
+            if (success) {
+                saveDatabase();
+                refreshData();
+            }
+        }).start();
+    }
+
+    // 트랙 재생
+    public void playTrack(Track track) {
+        // 현재 재생 중인 트랙 업데이트
+        currentlyPlayingTrack.postValue(track);
+        
+        // 재생 횟수 및 마지막 재생 시간 업데이트
+        new Thread(() -> {
+            scanner.updatePlayCount(track.getId());
+            scanner.updateLastPlayed(track.getId());
+            saveDatabase();
+            
+            // 재생 트랙 목록 새로고침
+            recentlyPlayedTracks.postValue(scanner.getRecentlyPlayedTracks(20));
+            frequentlyPlayedTracks.postValue(scanner.getFrequentlyPlayedTracks(20));
+        }).start();
+    }
+
+    // 플레이리스트 생성
+    public Playlist createPlaylist(String name, List<Track> tracks) {
+        Playlist playlist = new Playlist(
+                UUID.randomUUID().toString(),
+                name,
+                new ArrayList<>(tracks),
+                System.currentTimeMillis(),
+                false
+        );
+        
+        userPlaylists.add(playlist);
+        
+        // 플레이리스트 목록 업데이트
+        List<Playlist> currentPlaylists = new ArrayList<>(userPlaylists);
+        playlists.postValue(currentPlaylists);
+        
+        return playlist;
+    }
+
+    // 플레이리스트에 트랙 추가
+    public void addTrackToPlaylist(Playlist playlist, Track track) {
+        for (Playlist p : userPlaylists) {
+            if (p.getId().equals(playlist.getId())) {
+                p.getTracks().add(track);
+                break;
+            }
+        }
+        
+        // 플레이리스트 목록 업데이트
+        List<Playlist> currentPlaylists = new ArrayList<>(userPlaylists);
+        playlists.postValue(currentPlaylists);
+    }
+
+    // 장르별 플레이리스트 자동 생성
+    private void updateGeneratedPlaylists() {
+        Map<String, List<Track>> genreTracks = tracksByGenre.getValue();
+        if (genreTracks == null || genreTracks.isEmpty()) {
+            return;
+        }
+        
+        List<Playlist> generatedPlaylists = new ArrayList<>();
+        
+        // 각 장르별 플레이리스트 생성
+        for (Map.Entry<String, List<Track>> entry : genreTracks.entrySet()) {
+            String genre = entry.getKey();
+            List<Track> tracks = entry.getValue();
+            
+            if (tracks.size() >= 3) { // 최소 3곡 이상인 경우만 플레이리스트 생성
+                Playlist playlist = new Playlist(
+                        "genre_" + genre.toLowerCase().replace(" ", "_"),
+                        "Best of " + genre,
+                        tracks,
+                        System.currentTimeMillis(),
+                        true // 자동 생성 플레이리스트
+                );
+                generatedPlaylists.add(playlist);
+            }
+        }
+        
+        // 최근 재생 플레이리스트 생성
+        List<Track> recentTracks = recentlyPlayedTracks.getValue();
+        if (recentTracks != null && !recentTracks.isEmpty()) {
+            Playlist recentPlaylist = new Playlist(
+                    "recently_played",
+                    "Recently Played",
+                    recentTracks,
+                    System.currentTimeMillis(),
+                    true
+            );
+            generatedPlaylists.add(recentPlaylist);
+        }
+        
+        // 자주 재생 플레이리스트 생성
+        List<Track> frequentTracks = frequentlyPlayedTracks.getValue();
+        if (frequentTracks != null && !frequentTracks.isEmpty()) {
+            Playlist frequentPlaylist = new Playlist(
+                    "frequently_played",
+                    "My Favorites",
+                    frequentTracks,
+                    System.currentTimeMillis(),
+                    true
+            );
+            generatedPlaylists.add(frequentPlaylist);
+        }
+        
+        // 최종 플레이리스트 목록 (자동 생성 + 사용자 생성)
+        List<Playlist> allPlaylists = new ArrayList<>();
+        allPlaylists.addAll(generatedPlaylists);
+        allPlaylists.addAll(userPlaylists);
+        
+        playlists.postValue(allPlaylists);
+    }
+
+    // LiveData 접근자
+    public LiveData<Track> getCurrentlyPlayingTrack() {
+        return currentlyPlayingTrack;
+    }
+
+    public LiveData<Integer> getScanProgress() {
+        return scanProgress;
+    }
+
+    public LiveData<List<Track>> getAllTracks() {
+        return allTracks;
+    }
+
+    public LiveData<List<Track>> getRecentlyPlayedTracks() {
+        return recentlyPlayedTracks;
+    }
+
+    public LiveData<List<Track>> getFrequentlyPlayedTracks() {
+        return frequentlyPlayedTracks;
+    }
+
+    public LiveData<List<Track>> getRecentlyAddedTracks() {
+        return recentlyAddedTracks;
+    }
+
+    public LiveData<Map<String, List<Track>>> getTracksByGenre() {
+        return tracksByGenre;
+    }
+
+    public LiveData<List<Playlist>> getPlaylists() {
+        return playlists;
+    }
+
+    // ID로 플레이리스트 찾기
+    public Playlist getPlaylistById(String id) {
+        List<Playlist> allPlaylists = playlists.getValue();
+        if (allPlaylists != null) {
+            for (Playlist playlist : allPlaylists) {
+                if (playlist.getId().equals(id)) {
+                    return playlist;
+                }
+            }
+        }
+        return null;
+    }
+
+    // 앨범 가져오기
+    public List<Album> getAlbums() {
+        List<Track> tracks = allTracks.getValue();
+        if (tracks == null || tracks.isEmpty()) {
+            return Collections.emptyList();
+        }
+        
+        // 앨범별로 트랙 그룹화
+        Map<String, List<Track>> albumTracks = tracks.stream()
+                .collect(Collectors.groupingBy(track -> track.getAlbumTitle() + "|" + track.getArtist()));
+        
+        // 앨범 객체 생성
+        List<Album> albums = new ArrayList<>();
+        for (Map.Entry<String, List<Track>> entry : albumTracks.entrySet()) {
+            List<Track> albumTrackList = entry.getValue();
+            if (!albumTrackList.isEmpty()) {
+                Track firstTrack = albumTrackList.get(0);
+                
+                Album album = new Album(
+                        UUID.randomUUID().toString(),
+                        firstTrack.getAlbumTitle(),
+                        firstTrack.getArtist(),
+                        firstTrack.getAlbumArtUri(),
+                        firstTrack.getYear(),
+                        albumTrackList,
+                        firstTrack.getGenre()
+                );
+                
+                albums.add(album);
+            }
+        }
+        
+        return albums;
+    }
+}

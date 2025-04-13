@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 다크 테마가 기본 테마이므로 일반 테마를 그대로 사용 -->
+    <style name="Theme.Pancakemusicbox" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary 브랜드 색상 -->
+        <item name="colorPrimary">@color/accent_primary</item>
+        <item name="colorPrimaryVariant">@color/accent_secondary</item>
+        <item name="colorOnPrimary">@color/white</item>
+        
+        <!-- Secondary 브랜드 색상 -->
+        <item name="colorSecondary">@color/accent_primary</item>
+        <item name="colorSecondaryVariant">@color/accent_secondary</item>
+        <item name="colorOnSecondary">@color/white</item>
+        
+        <!-- Status bar 색상 -->
+        <item name="android:statusBarColor">@color/dark_background</item>
+        <item name="android:windowLightStatusBar">false</item>
+        
+        <!-- Background 색상 -->
+        <item name="android:colorBackground">@color/dark_background</item>
+        
+        <!-- 기타 스타일 -->
+        <item name="android:windowContentTransitions">true</item>
+    </style>
+</resources>

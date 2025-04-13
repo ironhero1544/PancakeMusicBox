@@ -1,0 +1,31 @@
+package com.example.pancakemusicbox.utils
+
+/**
+ * 밀리초 단위 시간을 "mm:ss" 형식으로 변환
+ * @param timeMs 밀리초 단위 시간
+ * @return 포맷팅된 시간 문자열 (예: "3:45")
+ */
+fun formatDuration(timeMs: Long): String {
+    val totalSeconds = timeMs / 1000
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+    return String.format("%d:%02d", minutes, seconds)
+}
+
+/**
+ * 밀리초 단위 시간을 "hh:mm:ss" 형식으로 변환 (1시간 이상인 경우)
+ * @param timeMs 밀리초 단위 시간
+ * @return 포맷팅된 시간 문자열 (예: "1:23:45" 또는 "3:45")
+ */
+fun formatDurationWithHours(timeMs: Long): String {
+    val totalSeconds = timeMs / 1000
+    val hours = totalSeconds / 3600
+    val minutes = (totalSeconds % 3600) / 60
+    val seconds = totalSeconds % 60
+    
+    return if (hours > 0) {
+        String.format("%d:%02d:%02d", hours, minutes, seconds)
+    } else {
+        String.format("%d:%02d", minutes, seconds)
+    }
+}

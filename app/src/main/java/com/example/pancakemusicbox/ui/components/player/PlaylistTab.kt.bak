@@ -1,0 +1,347 @@
+package com.example.pancakemusicbox.ui.components.player
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import com.example.pancakemusicbox.R
+import com.example.pancakemusicbox.model.Track
+import com.example.pancakemusicbox.utils.formatDuration
+import com.example.pancakemusicbox.ui.theme.HighResAudio
+
+/**
+ * 재생목록 탭 컴포넌트
+ */
+@Composable
+fun PlaylistTab(
+    currentTrack: Track,
+    queue: List<Track>,
+    currentTrackIndex: Int,
+    onTrackSelect: (Int) -> Unit,
+    onMoveTrack: (Int, Int) -> Unit,
+    onSaveQueue: () -> Unit,
+    onClearQueue: () -> Unit,
+    onShuffleQueue: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+        // 헤더
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "재생 대기열",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            
+            Spacer(modifier = Modifier.weight(1f))
+            
+            // 재생목록 저장 버튼
+            IconButton(
+                onClick = onSaveQueue,
+                modifier = Modifier.size(40.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_placeholder), // 저장 아이콘
+                    contentDescription = "Save Queue",
+                    tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                )
+            }
+            
+            // 재생목록 셔플 버튼
+            IconButton(
+                onClick = onShuffleQueue,
+                modifier = Modifier.size(40.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_shuffle),
+                    contentDescription = "Shuffle Queue",
+                    tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                )
+            }
+            
+            // 재생목록 초기화 버튼
+            IconButton(
+                onClick = onClearQueue,
+                modifier = Modifier.size(40.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_placeholder), // 쓰레기통 아이콘
+                    contentDescription = "Clear Queue",
+                    tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                )
+            }
+        }
+        
+        Divider(
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f),
+            thickness = 1.dp
+        )
+        
+        // 현재 재생 중인 트랙 표시
+        Text(
+            text = "지금 재생 중",
+            style = MaterialTheme.typography.bodyMedium.copy(
+                fontWeight = FontWeight.SemiBold
+            ),
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+        )
+        
+        QueueItem(
+            track = currentTrack,
+            isCurrentTrack = true,
+            index = currentTrackIndex,
+            onClick = { onTrackSelect(currentTrackIndex) },
+            onMoveUp = { /* 현재 재생 중인 트랙은 이동 불가 */ },
+            onMoveDown = { /* 현재 재생 중인 트랙은 이동 불가 */ },
+            showMoveButtons = false
+        )
+        
+        Divider(
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f),
+            thickness = 0.5.dp,
+            modifier = Modifier.padding(vertical = 8.dp)
+        )
+        
+        // 다음 재생 트랙 목록
+        Text(
+            text = "다음 재생",
+            style = MaterialTheme.typography.bodyMedium.copy(
+                fontWeight = FontWeight.SemiBold
+            ),
+            modifier = Modifier.padding(vertical = 8.dp)
+        )
+        
+        if (queue.size <= 1) {
+            // 대기열이 비어있는 경우
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "재생 대기열이 비어 있습니다",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                )
+            }
+        } else {
+            // 대기열 목록
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                // 현재 재생 중인 트랙 이후의 트랙들만 표시
+                val upcomingTracks = queue.subList(
+                    fromIndex = minOf(currentTrackIndex + 1, queue.size),
+                    toIndex = queue.size
+                )
+                
+                itemsIndexed(upcomingTracks) { index, track ->
+                    val actualIndex = currentTrackIndex + 1 + index
+                    QueueItem(
+                        track = track,
+                        isCurrentTrack = false,
+                        index = actualIndex,
+                        onClick = { onTrackSelect(actualIndex) },
+                        onMoveUp = { 
+                            if (index > 0 || currentTrackIndex + 1 == actualIndex) {
+                                onMoveTrack(actualIndex, actualIndex - 1)
+                            }
+                        },
+                        onMoveDown = { 
+                            if (index < upcomingTracks.size - 1) {
+                                onMoveTrack(actualIndex, actualIndex + 1)
+                            }
+                        },
+                        showMoveButtons = true
+                    )
+                    
+                    if (index < upcomingTracks.size - 1) {
+                        Divider(
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
+                            thickness = 0.5.dp,
+                            modifier = Modifier.padding(start = 56.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * 재생 큐 아이템 컴포넌트
+ */
+@Composable
+fun QueueItem(
+    track: Track,
+    isCurrentTrack: Boolean,
+    index: Int,
+    onClick: () -> Unit,
+    onMoveUp: () -> Unit,
+    onMoveDown: () -> Unit,
+    showMoveButtons: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // 트랙 인덱스 또는 현재 재생 표시
+        if (isCurrentTrack) {
+            // 현재 재생 중인 트랙 표시 (작은 스피커나 재생 아이콘)
+            Box(
+                modifier = Modifier
+                    .size(24.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_play),
+                    contentDescription = "Now Playing",
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+        } else {
+            // 트랙 번호
+            Text(
+                text = (index + 1).toString(),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                modifier = Modifier
+                    .size(24.dp)
+                    .padding(end = 4.dp),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+        }
+        
+        Spacer(modifier = Modifier.width(12.dp))
+        
+        // 트랙 정보
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+            // 트랙 제목 (하이레스 표시 포함)
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (track.isHighRes) {
+                    Box(
+                        modifier = Modifier
+                            .size(6.dp)
+                            .clip(CircleShape)
+                            .background(HighResAudio)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                }
+                
+                Text(
+                    text = track.title,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (isCurrentTrack) 
+                        MaterialTheme.colorScheme.primary 
+                    else 
+                        MaterialTheme.colorScheme.onBackground,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            
+            // 아티스트명
+            Text(
+                text = track.artist,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+        
+        // 트랙 길이
+        Text(
+            text = formatDuration(track.duration),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+            modifier = Modifier.padding(horizontal = 8.dp)
+        )
+        
+        // 이동 버튼 (위/아래)
+        if (showMoveButtons) {
+            Column(
+                modifier = Modifier.width(32.dp)
+            ) {
+                IconButton(
+                    onClick = onMoveUp,
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowUp,
+                        contentDescription = "Move Up",
+                        tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                
+                IconButton(
+                    onClick = onMoveDown,
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowDown,
+                        contentDescription = "Move Down",
+                        tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+        }
+    }
+}

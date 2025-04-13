@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">HiFi Player</string>
+    <string name="home">홈</string>
+    <string name="library">라이브러리</string>
+    <string name="settings">설정</string>
+    <string name="recently_played">최근 재생</string>
+    <string name="frequently_played">자주 듣는</string>
+    <string name="recently_added">최근 추가</string>
+    <string name="my_playlists">내 플레이리스트</string>
+    <string name="create_new_playlist">새 플레이리스트 만들기</string>
+    <string name="see_more">더 보기</string>
+    <string name="no_recently_played">최근 재생한 트랙이 없습니다</string>
+    <string name="tracks">노래</string>
+    <string name="playlists">플레이리스트</string>
+    <string name="artists">아티스트</string>
+    <string name="albums">앨범</string>
+    <string name="play">재생</string>
+    <string name="pause">일시정지</string>
+    <string name="next">다음</string>
+    <string name="previous">이전</string>
+    <string name="search">검색</string>
+</resources>
