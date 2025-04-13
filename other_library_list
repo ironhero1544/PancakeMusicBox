@@ -1,0 +1,48 @@
+## 프로젝트에서 사용 중인 외부 라이브러리 라이선스 목록
+
+이 프로젝트에서 사용 중인 외부 라이브러리와 그 라이선스입니다:
+
+1. **Oboe**
+   - 라이선스: Apache License 2.0
+   - 용도: 안드로이드 네이티브 오디오 처리
+
+2. **AndroidX 라이브러리**
+   - 라이선스: Apache License 2.0
+   - 용도: 안드로이드 앱 개발 기본 라이브러리
+
+3. **Jetpack Compose**
+   - 라이선스: Apache License 2.0
+   - 용도: UI 구현 프레임워크
+
+4. **Kotlin 및 코루틴**
+   - 라이선스: Apache License 2.0
+   - 용도: 기본 개발 언어 및 비동기 처리
+
+5. **Timber**
+   - 라이선스: Apache License 2.0
+   - 용도: 로깅
+
+6. **Hilt**
+   - 라이선스: Apache License 2.0
+   - 용도: 의존성 주입
+
+7. **Room**
+   - 라이선스: Apache License 2.0
+   - 용도: 로컬 데이터베이스 관리
+
+8. **Media3**
+   - 라이선스: Apache License 2.0
+   - 용도: 미디어 재생
+
+9. **Coil**
+   - 라이선스: Apache License 2.0
+   - 용도: 이미지 로딩
+
+10. **Moshi/Gson**
+    - 라이선스: Apache License 2.0
+    - 용도: JSON 파싱
+
+11. **OkHttp/Retrofit**
+    - 라이선스: Apache License 2.0
+    - 용도: 네트워크 통신
+
